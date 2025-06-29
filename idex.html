@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Cancer Detection & Analysis System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="header">
+        <h1>AI Cancer Detection System</h1>
+        <p>Advanced cancer risk assessment and symptom analysis</p>
+    </div>
+    
+    <div class="main-container">
+        <div class="chat-container">
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be added here dynamically -->
+            </div>
+            <div class="chat-input">
+                <input type="text" id="message-input" placeholder="Describe your symptoms or ask about cancer detection...">
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+        
+        <div class="detection-panel">
+            <h3>Cancer Detection Tools</h3>
+            
+            <div class="tool-section">
+                <h4>Risk Assessment</h4>
+                <button id="risk-assessment-btn" class="tool-btn">Start Risk Assessment</button>
+            </div>
+            
+            <div class="tool-section">
+                <h4>Image Analysis</h4>
+                <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                <button id="image-analysis-btn" class="tool-btn">Upload Medical Image</button>
+                <div id="image-preview"></div>
+            </div>
+            
+            <div class="tool-section">
+                <h4>Symptom Checker</h4>
+                <button id="symptom-checker-btn" class="tool-btn">Symptom Analysis</button>
+            </div>
+            
+            <div class="tool-section">
+                <h4>Health Tracker</h4>
+                <button id="health-tracker-btn" class="tool-btn">Track Health Metrics</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Risk Assessment Modal -->
+    <div id="risk-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Cancer Risk Assessment</h3>
+            <form id="risk-form">
+                <div class="form-group">
+                    <label>Age:</label>
+                    <input type="number" id="age" min="1" max="120" required>
+                </div>
+                <div class="form-group">
+                    <label>Gender:</label>
+                    <select id="gender" required>
+                        <option value="">Select</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Family History of Cancer:</label>
+                    <select id="family-history" required>
+                        <option value="">Select</option>
+                        <option value="none">No family history</option>
+                        <option value="distant">Distant relatives</option>
+                        <option value="close">Close relatives (parents, siblings)</option>
+                        <option value="multiple">Multiple family members</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Smoking Status:</label>
+                    <select id="smoking" required>
+                        <option value="">Select</option>
+                        <option value="never">Never smoked</option>
+                        <option value="former">Former smoker</option>
+                        <option value="current">Current smoker</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Alcohol Consumption:</label>
+                    <select id="alcohol" required>
+                        <option value="">Select</option>
+                        <option value="none">None</option>
+                        <option value="moderate">Moderate (1-2 drinks/day)</option>
+                        <option value="heavy">Heavy (3+ drinks/day)</option>
+                    </select>
+                </div>
+                <button type="submit">Calculate Risk</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
