@@ -7,6 +7,9 @@ class CancerDetectionSystem {
         this.cancerDatabase = this.initializeCancerDatabase();
         this.symptomPatterns = this.initializeSymptomPatterns();
         this.riskFactors = this.initializeRiskFactors();
+        this.conversationHistory = [];
+        this.lastAssessmentResult = null;
+        this.healthData = {};
         this.sendWelcomeMessage();
     }
 
@@ -20,6 +23,9 @@ class CancerDetectionSystem {
         this.imagePreview = document.getElementById('image-preview');
         this.symptomCheckerBtn = document.getElementById('symptom-checker-btn');
         this.healthTrackerBtn = document.getElementById('health-tracker-btn');
+        this.downloadConversationBtn = document.getElementById('download-conversation-btn');
+        this.downloadAssessmentBtn = document.getElementById('download-assessment-btn');
+        this.downloadDataBtn = document.getElementById('download-data-btn');
         this.riskModal = document.getElementById('risk-modal');
         this.riskForm = document.getElementById('risk-form');
         this.closeModal = document.querySelector('.close');
@@ -36,6 +42,11 @@ class CancerDetectionSystem {
         this.imageUpload.addEventListener('change', (e) => this.handleImageUpload(e));
         this.symptomCheckerBtn.addEventListener('click', () => this.startSymptomChecker());
         this.healthTrackerBtn.addEventListener('click', () => this.showHealthTracker());
+        
+        // Download functionality
+        this.downloadConversationBtn.addEventListener('click', () => this.downloadConversation());
+        this.downloadAssessmentBtn.addEventListener('click', () => this.downloadAssessmentReport());
+        this.downloadDataBtn.addEventListener('click', () => this.downloadHealthData());
         
         this.closeModal.addEventListener('click', () => this.closeRiskModal());
         this.riskForm.addEventListener('submit', (e) => this.handleRiskAssessment(e));
@@ -287,13 +298,12 @@ class CancerDetectionSystem {
     handleRiskAssessment(e) {
         e.preventDefault();
         
-        const formData = new FormData(this.riskForm);
         const data = {
-            age: parseInt(formData.get('age')),
-            gender: formData.get('gender'),
-            familyHistory: formData.get('family-history'),
-            smoking: formData.get('smoking'),
-            alcohol: formData.get('alcohol')
+            age: parseInt(document.getElementById('age').value),
+            gender: document.getElementById('gender').value,
+            familyHistory: document.getElementById('family-history').value,
+            smoking: document.getElementById('smoking').value,
+            alcohol: document.getElementById('alcohol').value
         };
 
         const riskScore = this.calculateRiskScore(data);
@@ -362,6 +372,14 @@ class CancerDetectionSystem {
         };
 
         const result = riskMessages[riskScore.level];
+        
+        // Store assessment result for download
+        this.lastAssessmentResult = {
+            riskScore: riskScore,
+            inputData: data,
+            result: result,
+            timestamp: new Date().toISOString()
+        };
         
         this.addMessage(
             `CANCER RISK ASSESSMENT RESULTS:\n\n` +
@@ -477,6 +495,117 @@ class CancerDetectionSystem {
         messageElement.textContent = text;
         this.chatMessages.appendChild(messageElement);
         this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+        
+        // Track conversation history
+        this.conversationHistory.push({
+            text: text,
+            sender: sender,
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    // File download functionality
+    downloadConversation() {
+        if (this.conversationHistory.length === 0) {
+            this.addMessage("No conversation history to download.", 'system');
+            return;
+        }
+
+        let content = "# Cancer Detection System - Conversation History\n\n";
+        content += `Generated on: ${new Date().toLocaleString()}\n\n`;
+        
+        this.conversationHistory.forEach((message, index) => {
+            const senderLabel = message.sender === 'user' ? 'You' : 
+                               message.sender === 'bot' ? 'AI Assistant' : 
+                               message.sender === 'system' ? 'System' : 
+                               message.sender === 'alert' ? 'Alert' : 'System';
+                               
+            content += `[${new Date(message.timestamp).toLocaleTimeString()}] ${senderLabel}:\n`;
+            content += `${message.text}\n\n`;
+        });
+
+        this.downloadFile(content, 'conversation-history.txt', 'text/plain');
+        this.addMessage("Conversation history downloaded successfully!", 'success');
+    }
+
+    downloadAssessmentReport() {
+        if (!this.lastAssessmentResult) {
+            this.addMessage("No assessment report available. Please complete a risk assessment first.", 'system');
+            return;
+        }
+
+        const assessment = this.lastAssessmentResult;
+        
+        // Create detailed PDF-like report in text format
+        let content = "# CANCER RISK ASSESSMENT REPORT\n\n";
+        content += `Generated on: ${new Date(assessment.timestamp).toLocaleString()}\n\n`;
+        content += "## PATIENT INFORMATION\n";
+        content += `Age: ${assessment.inputData.age}\n`;
+        content += `Gender: ${assessment.inputData.gender}\n`;
+        content += `Family History: ${assessment.inputData.familyHistory}\n`;
+        content += `Smoking Status: ${assessment.inputData.smoking}\n`;
+        content += `Alcohol Consumption: ${assessment.inputData.alcohol}\n\n`;
+        
+        content += "## RISK ASSESSMENT RESULTS\n";
+        content += `Risk Level: ${assessment.riskScore.level.toUpperCase()}\n`;
+        content += `Risk Score: ${assessment.riskScore.total}/12\n\n`;
+        content += `Assessment: ${assessment.result.message}\n\n`;
+        
+        content += "## RECOMMENDATIONS\n";
+        assessment.result.recommendations.forEach(rec => {
+            content += `• ${rec}\n`;
+        });
+        
+        content += "\n## DISCLAIMER\n";
+        content += "This assessment is based on general risk factors and is for informational purposes only. ";
+        content += "Always consult qualified healthcare professionals for medical advice, diagnosis, and treatment.\n\n";
+        content += "Generated by AI Cancer Detection System\n";
+
+        // Also create JSON version for data portability
+        const jsonData = {
+            reportType: "Cancer Risk Assessment",
+            generatedOn: assessment.timestamp,
+            patientInfo: assessment.inputData,
+            riskScore: assessment.riskScore,
+            results: assessment.result,
+            disclaimer: "This assessment is for informational purposes only. Consult healthcare professionals for medical advice."
+        };
+
+        this.downloadFile(content, 'risk-assessment-report.txt', 'text/plain');
+        this.downloadFile(JSON.stringify(jsonData, null, 2), 'risk-assessment-data.json', 'application/json');
+        
+        this.addMessage("Assessment report downloaded successfully! Both text and JSON formats have been saved.", 'success');
+    }
+
+    downloadHealthData() {
+        // Collect all health-related data
+        const healthData = {
+            exportDate: new Date().toISOString(),
+            conversationHistory: this.conversationHistory,
+            lastAssessment: this.lastAssessmentResult,
+            systemInfo: {
+                version: "1.0",
+                features: ["Risk Assessment", "Symptom Analysis", "Image Analysis", "Health Tracking"]
+            },
+            disclaimer: "This data is for personal record keeping and informational purposes only."
+        };
+
+        const content = JSON.stringify(healthData, null, 2);
+        this.downloadFile(content, 'health-data-export.json', 'application/json');
+        
+        this.addMessage("Health data exported successfully! JSON file contains all your data from this session.", 'success');
+    }
+
+    downloadFile(content, filename, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 }
 

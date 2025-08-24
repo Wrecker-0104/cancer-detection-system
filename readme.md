@@ -41,7 +41,7 @@ A comprehensive web-based cancer detection and analysis system that provides ris
 
 4. Open your browser and visit:
    ```
-   http://localhost:8000/idex.html
+   http://localhost:8000/index.html
    ```
 
 ## Usage
@@ -55,7 +55,7 @@ A comprehensive web-based cancer detection and analysis system that provides ris
 
 ```
 cancer-detection-system/
-├── idex.html          # Main HTML file
+├── index.html          # Main HTML file
 ├── style.css          # Styling and responsive design
 ├── script.js          # Core functionality and AI logic
 ├── setting.json       # Configuration settings
